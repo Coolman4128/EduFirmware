@@ -1,41 +1,70 @@
-# Prerequisites
-*.d
+# ESP-IDF build artifacts
+/build/
+/dist/
+/*.bin
+/*.elf
+/*.map
+/sdkconfig
+/sdkconfig.old
+/sdkconfig.defaults
+/bootloader/
+/flash_project_args
+/project_description.json
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# NVS partition CSV
+*.csv
 
-# Precompiled Headers
-*.gch
-*.pch
+# Core dumps
+core
 
-# Linker files
-*.ilk
+# CMake intermediate files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
 
-# Debugger Files
-*.pdb
+# Auto-generated files by tools
+*.pyc
+__pycache__/
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# Visual Studio Code
+.vscode/
+*.code-workspace
 
-# Fortran module files
-*.mod
-*.smod
+# JetBrains IDEs (CLion, etc.)
+.idea/
+*.iml
+cmake-build-*/
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# Python virtual environment
+.venv/
+venv/
+env/
 
-# Executables
-*.exe
-*.out
-*.app
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
 
-# debug information files
-*.dwo
+# Backup and temporary files
+*.bak
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs and debug output
+*.log
+
+# Git submodules (optional if not using)
+*.submodule/
+
+# ccache (if used for faster compilation)
+ccache/
+
+# Test coverage and analysis tools
+*.gcda
+*.gcno
+*.gcov
