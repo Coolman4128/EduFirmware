@@ -12,10 +12,15 @@
 #include "esp_chip_info.h"
 #include "esp_flash.h"
 #include "esp_system.h"
+#include "Services/ConnectionService.hpp"
 
 extern "C" void app_main(void)
 {
     printf("Hello world!\n");
+
+    ConnectionService connService;
+    int result = connService.publicMethod();
+    printf("Result from publicMethod: %d\n", result);
 
     
 }

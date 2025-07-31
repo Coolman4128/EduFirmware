@@ -1,3 +1,4 @@
-idf_component_register(SRCS "main.cpp"
+file(GLOB_RECURSE SOURCES "*.cpp")
+idf_component_register(SRCS ${SOURCES}
                     PRIV_REQUIRES spi_flash
-                    INCLUDE_DIRS "")
+                    INCLUDE_DIRS "./Services")
