@@ -11,10 +11,14 @@ static const char* TAG = "GPIOPinModel";
 #define ADC_UNIT_MAX ADC_UNIT_2
 #endif
 
+// Static PWM resource management variables
+bool GPIOPinModel::pwmChannelsInUse[2] = {false, false};
+int GPIOPinModel::activePwmCount = 0;
+
 // Constructor
 GPIOPinModel::GPIOPinModel(gpio_num_t pin, GPIOMode mode) 
     : pinNumber(pin), currentMode(mode), initialized(false),
-      ledcChannel(LEDC_CHANNEL_0), ledcTimer(LEDC_TIMER_0),
+      ledcChannel(LEDC_CHANNEL_MAX), ledcTimer(LEDC_TIMER_0),
       adcHandle(nullptr), adcCaliHandle(nullptr), 
       adcChannel(ADC_CHANNEL_MAX), adcUnit(ADC_UNIT_MAX) {
 }
@@ -95,6 +99,18 @@ bool GPIOPinModel::initializeOutput() {
 
 // Helper method to initialize PWM mode
 bool GPIOPinModel::initializePWM() {
+    // Check if we can allocate a PWM channel
+    int channelIndex = allocatePwmChannel();
+    if (channelIndex == -1) {
+        // More than 2 PWM channels requested - restart ESP32
+        esp_restart();
+        return false; // This line won't be reached, but for completeness
+    }
+    
+    // Set the allocated channel and timer
+    ledcChannel = (ledc_channel_t)channelIndex;
+    ledcTimer = (ledc_timer_t)channelIndex; // Use same index for timer
+    
     // Configure LEDC timer
     ledc_timer_config_t timer_config = {};
     timer_config.speed_mode = LEDC_LOW_SPEED_MODE;
@@ -105,6 +121,7 @@ bool GPIOPinModel::initializePWM() {
 
     esp_err_t result = ledc_timer_config(&timer_config);
     if (result != ESP_OK) {
+        releasePwmChannel(channelIndex);
         return false;
     }
 
@@ -123,6 +140,7 @@ bool GPIOPinModel::initializePWM() {
         initialized = true;
         return true;
     } else {
+        releasePwmChannel(channelIndex);
         return false;
     }
 }
@@ -316,8 +334,10 @@ bool GPIOPinModel::pwmWrite(uint32_t dutyCycle) {
 
 // Cleanup PWM configuration
 void GPIOPinModel::cleanupPWM() {
-    if (currentMode == GPIOMode::PWM) {
+    if (currentMode == GPIOMode::PWM && ledcChannel != LEDC_CHANNEL_MAX) {
         ledc_stop(LEDC_LOW_SPEED_MODE, ledcChannel, 0);
+        releasePwmChannel((int)ledcChannel);
+        ledcChannel = LEDC_CHANNEL_MAX;
     }
 }
 
@@ -373,4 +393,30 @@ adc_unit_t GPIOPinModel::getADCUnit(gpio_num_t pin) {
         return ADC_UNIT_2;
     }
     return ADC_UNIT_MAX;
+}
+
+// PWM resource management functions
+int GPIOPinModel::allocatePwmChannel() {
+    // Check if we already have 2 PWM channels active
+    if (activePwmCount >= 2) {
+        return -1; // Will trigger ESP32 restart
+    }
+    
+    // Find an available channel
+    for (int i = 0; i < 2; i++) {
+        if (!pwmChannelsInUse[i]) {
+            pwmChannelsInUse[i] = true;
+            activePwmCount++;
+            return i;
+        }
+    }
+    
+    return -1; // Should not reach here if activePwmCount is accurate
+}
+
+void GPIOPinModel::releasePwmChannel(int channelIndex) {
+    if (channelIndex >= 0 && channelIndex < 2 && pwmChannelsInUse[channelIndex]) {
+        pwmChannelsInUse[channelIndex] = false;
+        activePwmCount--;
+    }
 }

@@ -6,6 +6,7 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
+#include "esp_system.h"
 #include "../Enums/GPIOMode.cpp"
 
 // Define ADC constants if not available
@@ -27,6 +28,10 @@ private:
     ledc_channel_t ledcChannel;
     ledc_timer_t ledcTimer;
     
+    // Static PWM resource management (max 2 channels)
+    static bool pwmChannelsInUse[2];
+    static int activePwmCount;
+    
     // ADC related members
     adc_oneshot_unit_handle_t adcHandle;
     adc_cali_handle_t adcCaliHandle;
@@ -42,6 +47,10 @@ private:
     void cleanupADC();
     adc_channel_t getADCChannel(gpio_num_t pin);
     adc_unit_t getADCUnit(gpio_num_t pin);
+    
+    // PWM resource management
+    static int allocatePwmChannel();
+    static void releasePwmChannel(int channelIndex);
 
 public:
     // Constructor

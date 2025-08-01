@@ -25,14 +25,20 @@ extern "C" void app_main(void)
     SerialService* serialService = new SerialService();
     serialService->Initialize();
 
-    GPIOPinModel* gpioPin = new GPIOPinModel(GPIO_NUM_1, GPIOMode::ANALOGREAD);
+    GPIOPinModel* gpioPin = new GPIOPinModel(GPIO_NUM_1, GPIOMode::PWM);
     gpioPin->initialize();
+    GPIOPinModel* gpioPin2 = new GPIOPinModel(GPIO_NUM_2, GPIOMode::ANALOGREAD);
+    gpioPin2->initialize();
+    int dutyCycle = 0; // Example duty cycle for PWM (0-1023 range)
     while(true){
-        int analogValue = gpioPin->analogRead();
+
+        int analogValue = gpioPin2->analogRead(); // Read analog value
+        int pwmValue = (int)((float)((float)analogValue / 3100.00) * 1023); // Scale to PWM range (0-1023)
+        gpioPin->pwmWrite(pwmValue); // Write PWM value
         CommandPacket* packet = new CommandPacket(0x01, 0x1234, (uint16_t)analogValue, 0x9ABC);
         serialService->sendPacket(packet);
         delete packet; // Clean up the packet after sending
-        CommandPacket* read = serialService->receivePacket(20000);
+        CommandPacket* read = serialService->receivePacket(100);
         if (read != nullptr) {
             serialService->sendPacket(read);
             delete read; // Clean up the received packet
