@@ -47,7 +47,7 @@ void serialHandlerTask(void* pvParameters)
         {
             // Process the command through the command service
             CommandPacket responsePacket = commandService->processCommand(*receivedPacket);
-            
+            vTaskDelay(pdMS_TO_TICKS(5)); // Allow some time for processing
             // Send back the response packet
             serialService->sendPacket(&responsePacket);
             

@@ -58,6 +58,12 @@ CommandPacket* SerialService::receivePacket(int timeout) {
         packet->Data = (data[3] | (data[4] << 8));
         packet->DeviceId = (data[5] | (data[6] << 8));
         packet->Crc = data[7];
+
+        // Validate CRC
+        if (packet->Crc != CommandPacket::calculateCrc(*packet)) {
+            delete packet;
+            return nullptr; // CRC mismatch, discard packet
+        }
         return packet;
     }
     return nullptr;
