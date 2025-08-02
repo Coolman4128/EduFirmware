@@ -1,3 +1,6 @@
+#ifndef GPIOMODE_HPP
+#define GPIOMODE_HPP
+
 enum class GPIOMode {
     INPUT,
     OUTPUT,
@@ -6,3 +9,5 @@ enum class GPIOMode {
     PWM,
     ANALOGREAD
 };
+
+#endif // GPIOMODE_HPP

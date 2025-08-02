@@ -7,7 +7,7 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_system.h"
-#include "../Enums/GPIOMode.cpp"
+#include "../Enums/GPIOMode.hpp"
 
 // Define ADC constants if not available
 #ifndef ADC_CHANNEL_MAX
